@@ -80,3 +80,43 @@ public class HomeController {
 현재 Spring Project에 접근하기 위한 기본 URL은 localhost:8080으로 해당 페이지에 접근하는 경우 home이 return된다  
 그렇다면 home는 무엇을 나타낼까  
 home이 바로 home.html View를 말하는데 /src/main/resource/templates/home.html 을 만들어 작성하면 localhost:8080 에 접근하여 보이는 페이지가 된다
+
+### Controller 테스트하기
+앞서 만든 controller을 테스트 하기 위한 테스트 코드를 작성해보자  
+IntelliJ에서는 테스트 코드를 작성을 위해 Ctrl + Shift + t를 누르면 테스트코드를 작성할 수 있는 기능을 제공  
+HomeControllerTest 코드는 아래와 같다
+```java
+package tacos;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.test.web.servlet.MockMvc;
+import tacos.HomeController;
+
+import static org.hamcrest.Matchers.containsString;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+@WebMvcTest(HomeController.class)
+class HomeControllerTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Test
+    public void testHomePage() throws Exception {
+        mockMvc.perform(get("/"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("home"))
+                .andExpect(content().string(containsString("Welcome to...")));
+    }
+}
+```
+부분적으로 살펴보자 먼저 @WebMvcTest 어노테이션은 스프링 MVC를 테스트 하기위한 스프링 지원을 설정하며  
+testHomePage method에서는 get("/")을 통해 localhost:8080/ 페이지를 호출해 원하는 값과 동일한지 테스트하게 된다
+각 테스트 항목이 뜻하는 바를 살펴보자
+- status().isOk() Http 상태값이 ok(200)인지 확인하는 부분으로 페이지가 없는 경우 404, 내부 오류가 있는 경우 500이 발생
+- view.name("home") 뷰의 이름이 home 인지 확인
+- content().string(containsString("Welcone to..."))) 브라우저에 보이는 뷰에 Welcome to가 포함되어 있는지 확인
+위의 3가지를 모두 만족해야 정상적으로 테스트가 완료  
